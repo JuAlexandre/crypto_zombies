@@ -1,26 +1,42 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
 import "./zombiefeeding.sol";
 
 contract ZombieHelper is ZombieFeeding {
+    uint256 levelUpFee = 0.001 ether;
+
     modifier aboveLevel(uint256 _level, uint256 _zombieId) {
         require(zombies[_zombieId].level >= _level);
         _;
     }
 
+    function withdraw() external onlyOwner {
+        owner.transfer(this.balance);
+    }
+
+    function setLevelUpFee(uint256 _fee) external onlyOwner {
+        levelUpFee = _fee;
+    }
+
+    function levelUp(uint256 _zombieId) external payable {
+        require(msg.value == levelUpFee);
+        zombies[_zombieId].level++;
+    }
+
     function changeName(uint256 _zombieId, string _newName)
         external
         aboveLevel(2, _zombieId)
+        ownerOf(_zombieId)
     {
-        require(msg.sender == zombieToOwner[_zombieId]);
         zombies[_zombieId].name = _newName;
     }
 
     function changeDna(uint256 _zombieId, string _newDna)
         external
         aboveLevel(20, _zombieId)
+        ownerOf(_zombieId)
     {
-        require(msg.sender == zombieToOwner[_zombieId]);
         zombies[_zombieId].dna = _newDna;
     }
 
